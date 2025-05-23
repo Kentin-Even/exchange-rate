@@ -1,0 +1,20 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 1s
+    socket-timeout: 30s
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.kafka: INFO
+    com.learn.kafka: DEBUG
+    org.springframework.data.elasticsearch: DEBUG
