@@ -28,6 +28,7 @@ public class ExchangeRateController {
     public Mono<ResponseEntity<ExchangeRate>> fetchExchangeRates() {
         return exchangeRateService.fetchAndPublishExchangeRates()
                 .map(ResponseEntity::ok)
+                .onErrorReturn(ResponseEntity.internalServerError().build())
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 

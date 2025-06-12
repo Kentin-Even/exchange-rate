@@ -4,6 +4,7 @@ import com.learn.kafka.model.ExchangeRate;
 import com.learn.kafka.service.ElasticsearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -67,8 +68,9 @@ public class ProxyController {
         try {
             log.info("Fetching latest exchange rates from Elasticsearch...");
             
-            // Requête simple pour récupérer tous les documents, triés par timestamp
+            // Requête pour récupérer le document le plus récent, trié par timestamp descendant
             CriteriaQuery query = new CriteriaQuery(Criteria.where("id").exists());
+            query.addSort(Sort.by(Sort.Direction.DESC, "timestamp"));
             query.setMaxResults(1);
             
             SearchHits<ExchangeRate> searchHits = elasticsearchOperations.search(query, ExchangeRate.class);
@@ -76,8 +78,8 @@ public class ProxyController {
             
             if (searchHits.hasSearchHits()) {
                 ExchangeRate latestRate = searchHits.getSearchHit(0).getContent();
-                log.info("Returning exchange rate with ID: {} and baseCurrency: {}", 
-                        latestRate.getId(), latestRate.getBaseCurrency());
+                log.info("Returning latest exchange rate with ID: {}, baseCurrency: {} and timestamp: {}", 
+                        latestRate.getId(), latestRate.getBaseCurrency(), latestRate.getTimestamp());
                 return ResponseEntity.ok(latestRate);
             } else {
                 log.warn("No exchange rates found in Elasticsearch");
@@ -98,6 +100,7 @@ public class ProxyController {
             log.info("Fetching all exchange rates from Elasticsearch...");
             
             CriteriaQuery query = new CriteriaQuery(Criteria.where("id").exists());
+            query.addSort(Sort.by(Sort.Direction.DESC, "timestamp"));
             query.setMaxResults(100);
             
             SearchHits<ExchangeRate> searchHits = elasticsearchOperations.search(query, ExchangeRate.class);
@@ -123,6 +126,7 @@ public class ProxyController {
             log.info("Fetching rate for currency: {}", currency);
             
             CriteriaQuery query = new CriteriaQuery(Criteria.where("id").exists());
+            query.addSort(Sort.by(Sort.Direction.DESC, "timestamp"));
             query.setMaxResults(1);
             
             SearchHits<ExchangeRate> searchHits = elasticsearchOperations.search(query, ExchangeRate.class);
@@ -133,7 +137,7 @@ public class ProxyController {
                     Double rate = latestRate.getRates().get(currency.toUpperCase());
                     
                     if (rate != null) {
-                        log.info("Found rate for {}: {}", currency, rate);
+                        log.info("Found rate for {}: {} (timestamp: {})", currency, rate, latestRate.getTimestamp());
                         return ResponseEntity.ok(rate);
                     } else {
                         log.warn("Currency {} not found in rates", currency);

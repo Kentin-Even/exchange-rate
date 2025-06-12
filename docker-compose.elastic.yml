@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - http.host=0.0.0.0
+      - transport.host=0.0.0.0
+      - xpack.security.enabled=false # Désactiver explicitement la sécurité
+      - xpack.security.enrollment.enabled=false # Désactiver l'inscription automatique
+      - xpack.security.http.ssl.enabled=false # Désactiver SSL pour HTTP
+      - xpack.security.transport.ssl.enabled=false # Désactiver SSL pour le transport
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+    ports:
+      - "9200:9200"
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - kafka-kata-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.1
+    container_name: logstash
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+    ports:
+      - "5044:5044" # Beats input
+      - "9600:9600" # Monitoring API
+    networks:
+      - kafka-kata-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.1
+    container_name: kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - kafka-kata-network
+
+volumes:
+  elastic_data:
+
+networks:
+  kafka-kata-network:
+    external: true

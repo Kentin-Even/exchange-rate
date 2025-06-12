@@ -19,8 +19,13 @@ public class ProducerController {
 
     @PostMapping("/produce")
     public ResponseEntity<String> sendMessage(@RequestParam("content") String content) {
-        messageProducer.sendMessage(topicName, content);
-        return ResponseEntity.ok(content);
+        try {
+            messageProducer.sendMessage(topicName, content);
+            return ResponseEntity.ok(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("Erreur lors de l'envoi du message: " + e.getMessage());
+        }
     }
 
 }

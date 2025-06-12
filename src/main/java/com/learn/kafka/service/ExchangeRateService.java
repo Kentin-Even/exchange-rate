@@ -31,4 +31,4 @@ public class ExchangeRateService {
                     return rate;
                 });
     }
-} 
+}

@@ -1,0 +1,41 @@
+# Fichiers et dossiers à ignorer lors du build Docker
+
+# Dossiers de build
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+logs/
+
+# Documentation
+README.md
+TESTING-GUIDE.md
+KIBANA_SETUP.md
+*.md
+
+# Scripts
+run-all-tests.sh
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Tests et rapports
+jacoco/
+**/test-results/
+**/coverage/ 
